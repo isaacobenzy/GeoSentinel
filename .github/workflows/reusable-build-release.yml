@@ -59,7 +59,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        # Option A: only windows-latest (uncomment if you prefer only Windows)
+        # os: [windows-latest]
+
+        # Option B: both (lower memory usage due to directory builds)
+        os: [windows-latest, ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -81,24 +85,49 @@ jobs:
           fi
           pip install pyinstaller
 
-      - name: Build Windows EXE (no console)
+      - name: Build Windows (directory build, archived)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $Pretty = "${{ inputs.app_name }}"
           $Safe = ($Pretty -replace '[^A-Za-z0-9._-]', '_')
 
-          pyinstaller --onefile --noconsole --name "$Safe" "${{ inputs.main_py_file }}"
+          # Use directory build (default) instead of --onefile to lower memory usage
+          pyinstaller --noconsole --name "$Safe" "${{ inputs.main_py_file }}"
 
-          $exePath = "dist\$Safe.exe"
-          if (!(Test-Path $exePath)) {
+          $distDir = "dist\$Safe"
+          if (!(Test-Path $distDir)) {
             Write-Host "dist/ contains:"
             Get-ChildItem -Path dist -Force | Format-Table -AutoSize
-            throw "Expected $exePath not found"
+            throw "Expected $distDir not found"
           }
 
           New-Item -ItemType Directory -Force -Path out | Out-Null
-          Copy-Item $exePath "out\$Safe.exe" -Force
+          # Archive the directory to reduce artifact count / simplify release upload
+          $zipPath = "out\$Safe.zip"
+          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+          Compress-Archive -Path "$distDir\*" -DestinationPath $zipPath -Force
+
+      - name: Build Linux (directory build, archived)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          PRETTY="${{ inputs.app_name }}"
+          SAFE="$(echo "$PRETTY" | sed -E 's/[^A-Za-z0-9._-]/_/g')"
+
+          # Use directory build (no --onefile) to reduce memory usage
+          pyinstaller --name "$SAFE" "${{ inputs.main_py_file }}"
+
+          if [ ! -d "dist/$SAFE" ]; then
+            echo "Expected dist/$SAFE not found"
+            echo "dist/ contains:"
+            ls -la dist || true
+            exit 1
+          fi
+
+          mkdir -p out
+          tar -C dist -czf "out/$SAFE.tar.gz" "$SAFE"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
