@@ -1,4 +1,4 @@
-# 🌍 GeoSentinel
+# 🌍 GeoSentinel 
 
 <div align="center">
 
