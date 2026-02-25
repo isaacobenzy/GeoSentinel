@@ -9,3 +9,9 @@ ollama
 gTTS
 pysocks
 stem
+ultralytics
+chromadb
+sentence_transformers
+beautifulsoup4
+requests
+python-dotenv

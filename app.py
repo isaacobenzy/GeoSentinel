@@ -21,6 +21,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from PIL import Image, ExifTags
 import tempfile
 from gtts import gTTS
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 # Import local configs
@@ -41,20 +45,21 @@ GEODATA_DIR = os.path.join(PARENT_DIR, 'geodata')
 
 
 
-# Social / News API Keys (Placeholders)
-TWITTER_API_KEY = "YOUR_API_KEYS"
-TWITTER_API_SECRET = "YOUR_API_KEYS"
-TWITTER_ACCESS_TOKEN = "YOUR_API_KEYS"
-TWITTER_ACCESS_TOKEN_SECRET = "YOUR_API_KEYS"
-TWITTER_BEARER_TOKEN = "YOUR_API_KEYS"
-api_key = "YOUR_API_KEYS"
+
+# Social / News API Keys (Load from .env or use placeholders)
+TWITTER_API_KEY = os.getenv("TWITTER_API_KEY", "YOUR_API_KEYS")
+TWITTER_API_SECRET = os.getenv("TWITTER_API_SECRET", "YOUR_API_KEYS")
+TWITTER_ACCESS_TOKEN = os.getenv("TWITTER_ACCESS_TOKEN", "YOUR_API_KEYS")
+TWITTER_ACCESS_TOKEN_SECRET = os.getenv("TWITTER_ACCESS_TOKEN_SECRET", "YOUR_API_KEYS")
+TWITTER_BEARER_TOKEN = os.getenv("TWITTER_BEARER_TOKEN", "YOUR_API_KEYS")
+api_key = os.getenv("GENERIC_API_KEY", "YOUR_API_KEYS")
 # --- CELL TOWER UPLINK ---
-OPENCELLID_API_KEY = "YOUR_API_KEY" 
-HF_TOKEN = "YOUR_API_KEY" 
+OPENCELLID_API_KEY = os.getenv("OPENCELLID_API_KEY", "YOUR_API_KEY")
+HF_TOKEN = os.getenv("HF_TOKEN", "YOUR_API_KEY")
 
 
-NEWS_API_KEY = "YOUR_API_KEYS"
-OPENROUTER_API_KEY = "YOUR_API_KEYS" # USER: Replace with your actual key
+NEWS_API_KEY = os.getenv("NEWS_API_KEY", "YOUR_API_KEYS")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "YOUR_API_KEYS")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key'
